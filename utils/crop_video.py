@@ -159,9 +159,24 @@ def crop_all_utts(args, frames_dir, utt_dir):
 
         if audio_start < 0:
             raise ValueError("The audio start frame cannot be negative.")
+        
+        # scale resolution, face coordinates per frame, width & height data
+        sample_img = cv2.imread(flist[0])
+        actual_h, actual_w = sample_img.shape[:2]
+        
+        sw = actual_w / image_size_x
+        sh = actual_h / image_size_y
 
-        # face coordinates per frame, width & height data
-        frame_list = [data.split(" ") for data in lines[lineno:]]
+        frame_list = []
+        for data in lines[lineno:]:
+            parts = data.strip().split()
+            if len(parts) >= 5:
+                idx = parts[0]
+                x = str(int(float(parts[1]) * sw))
+                y = str(int(float(parts[2]) * sh))
+                w = str(int(float(parts[3]) * sw))
+                h = str(int(float(parts[4]) * sh))
+                frame_list.append([idx, x, y, w, h] + parts[5:])
 
         # adjust frame length according to audio start and end info
         crop_regions = adjust_av_index(audio_start_frame, audio_end_frame, frame_list)
